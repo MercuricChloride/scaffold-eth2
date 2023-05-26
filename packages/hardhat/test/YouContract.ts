@@ -1,28 +1,31 @@
+import { YourContract } from "../typechain-types";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { YourContract } from "../typechain-types";
 
 describe("YourContract", function () {
   // We define a fixture to reuse the same setup in every test.
 
+  const inXHours = (x: number) => Date.now() + 60 * 60 * x;
+  const deadline = inXHours(7);
+  const valueStake = ethers.utils.parseEther("0.1");
+
   let yourContract: YourContract;
+
   before(async () => {
-    const [owner] = await ethers.getSigners();
     const yourContractFactory = await ethers.getContractFactory("YourContract");
-    yourContract = (await yourContractFactory.deploy(owner.address)) as YourContract;
+    yourContract = (await yourContractFactory.deploy()) as YourContract;
     await yourContract.deployed();
+
+    const [user] = await ethers.getSigners();
+    await yourContract.setAlarm(deadline, valueStake, user.address, { value: valueStake });
   });
 
-  describe("Deployment", function () {
-    it("Should have the right message on deploy", async function () {
-      expect(await yourContract.greeting()).to.equal("Building Unstoppable Apps!!!");
-    });
-
-    it("Should allow setting a new message", async function () {
-      const newGreeting = "Learn Scaffold-ETH 2! :)";
-
-      await yourContract.setGreeting(newGreeting);
-      expect(await yourContract.greeting()).to.equal(newGreeting);
+  describe("Creating Alarms", function () {
+    it("Shouldn't allow users to set an alarm if they already have one open", async function () {
+      const [user] = await ethers.getSigners();
+      await expect(
+        yourContract.setAlarm(deadline, valueStake, user.address, { value: valueStake }),
+      ).to.be.revertedWithCustomError(yourContract, "AlarmAlreadySet");
     });
   });
 });

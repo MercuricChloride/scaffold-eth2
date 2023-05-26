@@ -1,78 +1,98 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.20;
 
-// Useful for debugging. Remove when deploying to a live network.
-import "hardhat/console.sol";
-// Use openzeppelin to inherit battle-tested implementations (ERC20, ERC721, etc)
-// import "@openzeppelin/contracts/access/Ownable.sol";
+error AlarmAlreadySet(uint256 alarmTime);
+error SendFundsError();
+error onlyUser();
+error invalidStake();
+error invalidDeadline();
+error youSleptIn();
+error youShouldBeSleeping();
+
+error userStillSleeping();
+error cantSlashYourself();
 
 /**
- * A smart contract that allows changing a state variable of the contract and tracking the changes
- * It also allows the owner to withdraw the Ether in the contract
- * @author BuidlGuidl
+ * A smart contract that allows users to create alarm clocks with financial stake to lose if they don't wake up on time.
+ * @author BlindNabler
  */
 contract YourContract {
+  // State Variables
+  // user -> Alarm config
+  mapping(address user => Alarm) public alarms;
+  // user -> stats
+  mapping(address user => UserStats) public userStats;
 
-    // State Variables
-    address public immutable owner;
-    string public greeting = "Building Unstoppable Apps!!!";
-    bool public premium = false;
-    uint256 public totalCounter = 0;
-    mapping(address => uint) public userGreetingCounter;
+  struct Alarm {
+    uint256 deadline;
+    uint256 valueStake;
+  }
 
-    // Events: a way to emit log statements from smart contract that can be listened to by external parties
-    event GreetingChange(address indexed greetingSetter, string newGreeting, bool premium, uint256 value);
+  struct UserStats {
+    uint128 onTimeAlarms;
+    uint128 missedAlarms;
+  }
 
-    // Constructor: Called once on contract deployment
-    // Check packages/hardhat/deploy/00_deploy_your_contract.ts
-    constructor(address _owner) {
-        owner = _owner;
+  // Events: a way to emit log statements from smart contract that can be listened to by external parties
+  event AlarmSet(address indexed user, uint256 alarmTime, uint256 valueStake);
+  event AlarmDismissed(address indexed user, uint256 alarmTime);
+  event AlarmMissed(address indexed user, address indexed dismisser, uint256 valueLost);
+
+  modifier onlyAlarmNotSet(address user) {
+    Alarm memory alarm = alarms[user];
+
+    if (alarm.deadline != 0 && alarm.deadline != 0) {
+      revert AlarmAlreadySet(alarms[user].deadline);
     }
+    _;
+  }
 
-    // Modifier: used to define a set of rules that must be met before or after a function is executed
-    // Check the withdraw() function
-    modifier isOwner() {
-        // msg.sender: predefined variable that represents address of the account that called the current function
-        require(msg.sender == owner, "Not the Owner");
-        _;
+  modifier onlyAlarmIsSet(address user) {
+    Alarm memory alarm = alarms[user];
+    if (alarm.deadline > block.timestamp) revert youSleptIn();
+    _;
+  }
+
+  function setAlarm(uint256 deadline, uint256 valueStake, address user) public payable onlyAlarmNotSet(user) {
+    if (msg.sender != user) revert onlyUser();
+    if (msg.value != valueStake) revert invalidStake();
+    if (block.timestamp >= deadline) revert invalidDeadline();
+
+    alarms[user] = Alarm(deadline, valueStake);
+  }
+
+  function dismissAlarm() public {
+    Alarm memory alarm = alarms[msg.sender];
+    if (alarm.deadline < block.timestamp) revert youSleptIn();
+    if (alarm.deadline > block.timestamp + 1 hours) revert youShouldBeSleeping();
+    _sendFunds(alarm.valueStake, msg.sender, msg.sender);
+    userStats[msg.sender].onTimeAlarms++;
+  }
+
+  function missAlarm(address user) public {
+    Alarm memory alarm = alarms[user];
+    if (alarm.deadline > block.timestamp) revert userStillSleeping();
+    if (user == msg.sender) revert cantSlashYourself();
+
+    _sendFunds(alarm.valueStake, user, msg.sender);
+    userStats[user].missedAlarms++;
+  }
+
+  function _sendFunds(uint256 amount, address user, address recipient) internal {
+    if (alarms[user].deadline == 0) {
+      revert SendFundsError();
     }
+    delete alarms[user];
 
-    /**
-     * Function that allows anyone to change the state variable "greeting" of the contract and increase the counters
-     *
-     * @param _newGreeting (string memory) - new greeting to save on the contract
-     */
-    function setGreeting(string memory _newGreeting) public payable {
-        // Print data to the hardhat chain console. Remove when deploying to a live network.
-        console.log("Setting new greeting '%s' from %s",  _newGreeting, msg.sender);
+    (bool success, ) = recipient.call{value: amount}("");
 
-        // Change state variables
-        greeting = _newGreeting;
-        totalCounter += 1;
-        userGreetingCounter[msg.sender] += 1;
-
-        // msg.value: built-in global variable that represents the amount of ether sent with the transaction
-        if (msg.value > 0) {
-            premium = true;
-        } else {
-            premium = false;
-        }
-
-        // emit: keyword used to trigger an event
-        emit GreetingChange(msg.sender, _newGreeting, msg.value > 0, 0);
+    if (!success) {
+      revert SendFundsError();
     }
+  }
 
-    /**
-     * Function that allows the owner to withdraw all the Ether in the contract
-     * The function can only be called by the owner of the contract as defined by the isOwner modifier
-     */
-    function withdraw() isOwner public {
-        (bool success,) = owner.call{value: address(this).balance}("");
-        require(success, "Failed to send Ether");
-    }
-
-    /**
-     * Function that allows the contract to receive ETH
-     */
-    receive() external payable {}
+  /**
+   * Function that allows the contract to receive ETH
+   */
+  receive() external payable {}
 }
