@@ -34,9 +34,9 @@ contract YourContract {
   }
 
   // Events: a way to emit log statements from smart contract that can be listened to by external parties
-  event AlarmSet(address indexed user, uint256 alarmTime, uint256 valueStake);
-  event AlarmDismissed(address indexed user, uint256 alarmTime);
-  event AlarmMissed(address indexed user, address indexed dismisser, uint256 valueLost);
+  event AlarmSet(address indexed user, uint256 indexed alarmTime, uint256 indexed valueStake);
+  event AlarmDismissed(address indexed user, uint256 indexed alarmTime);
+  event AlarmMissed(address indexed user, address indexed dismisser, uint256 indexed valueLost);
 
   modifier onlyAlarmNotSet(address user) {
     Alarm memory alarm = alarms[user];

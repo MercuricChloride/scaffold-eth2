@@ -2,53 +2,55 @@ import Head from "next/head";
 import Link from "next/link";
 import type { NextPage } from "next";
 import { BugAntIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import AlarmList from "~~/components/AlarmList";
+import CreateAlarm from "~~/components/CreateAlarm";
+import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
+import { useAccount } from "wagmi";
+import { NavLink } from "~~/components/Header";
 
 const Home: NextPage = () => {
+  const { address, isConnected } = useAccount();
+
+  const { data: alarm } = useScaffoldContractRead({
+    contractName: "YourContract",
+    functionName: "alarms",
+    args: [address],
+  });
+
+  function alarmSet(alarm: any | undefined) {
+    return alarm ? alarm.valueStake.toString() !== "0" : false;
+  }
+
   return (
     <>
       <Head>
-        <title>Scaffold-ETH 2 App</title>
+        <title>Ethereum Alarm Clock</title>
         <meta name="description" content="Created with 🏗 scaffold-eth-2" />
       </Head>
 
       <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
+        <div className="px-5 w-1/2">
           <h1 className="text-center mb-8">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
+            <span className="block text-4xl font-bold">Ethereum Alarm Clock 💰⏰</span>
           </h1>
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold">packages/nextjs/pages/index.tsx</code>
+          <p className="text-center text-lg m-10">
+            All billionaires say they wake up at 5, and now you'll be broke if you don't!
           </p>
-          <p className="text-center text-lg">
-            Edit your smart contract <code className="italic bg-base-300 text-base font-bold">YourContract.sol</code> in{" "}
-            <code className="italic bg-base-300 text-base font-bold">packages/hardhat/contracts</code>
+          <p className="text-center text-lg m-10">
+            The idea here is that you set an alarm and attach a stake of eth to it. If you don't wake up on time and disable your alarm, you money wil elligible to be claimed by someone liquidating you and they get your stake.
           </p>
         </div>
 
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contract
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <SparklesIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Experiment with{" "}
-                <Link href="/example-ui" passHref className="link">
-                  Example UI
-                </Link>{" "}
-                to build your own UI.
-              </p>
-            </div>
+        <div className="flex flex-col items-center justify-center mt-10">
+          <div className="flex flex-row items-center justify-center">
+            <Link
+              href="/alarms"
+            >
+              <button className="flex flex-row items-center justify-center px-4 py-2 text-base font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <SparklesIcon className="w-6 h-6 mr-2" />
+                <span>Get Started</span>
+              </button>
+            </Link>
           </div>
         </div>
       </div>
