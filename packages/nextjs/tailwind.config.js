@@ -7,6 +7,32 @@ module.exports = {
   daisyui: {
     themes: [
       {
+        alarm: {
+          primary: "#4C5C68",
+          "primary-content": "#FFFFFF",
+          secondary: "#4C5C68",
+          "secondary-content": "#FFFFFF",
+          accent: "#93BBFB",
+          "accent-content": "#FFFFFF",
+          neutral: "#212638",
+          "neutral-content": "#ffffff",
+          "base-100": "#DCDCDD",
+          "base-200": "#C5C3C6",
+          "base-300": "#4C5C68",
+          "base-content": "#000000",
+          info: "#93BBFB",
+          success: "#34EEB6",
+          warning: "#FFCF72",
+          error: "#FF8863",
+
+          "--rounded-btn": "9999rem",
+
+          ".tooltip": {
+            "--tooltip-tail": "6px",
+          },
+        },
+      },
+      {
         scaffoldEth: {
           primary: "#93BBFB",
           "primary-content": "#212638",

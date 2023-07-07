@@ -2,7 +2,8 @@ import React, { useCallback, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Bars3Icon, ClockIcon } from "@heroicons/react/24/outline";
+import { useAccount } from "wagmi";
+import { Bars3Icon, ClockIcon, GlobeAmericasIcon, HomeIcon, UserIcon } from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 
@@ -29,6 +30,7 @@ const NavLink = ({ href, children }: { href: string; children: React.ReactNode }
 export const Header = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const burgerMenuRef = useRef<HTMLDivElement>(null);
+  const { address } = useAccount();
 
   useOutsideClick(
     burgerMenuRef,
@@ -38,12 +40,27 @@ export const Header = () => {
   const navLinks = (
     <>
       <li>
-        <NavLink href="/">Home</NavLink>
+        <NavLink href="/">
+          <HomeIcon className="h-4 w-4" />
+          Home
+        </NavLink>
       </li>
       <li>
         <NavLink href="/alarms">
           <ClockIcon className="h-4 w-4" />
-          Dashboard
+          Set / Dismiss an alarm
+        </NavLink>
+      </li>
+      <li>
+        <NavLink href={`/${address}`}>
+          <UserIcon className="h-4 w-4" />
+          Your Profile
+        </NavLink>
+      </li>
+      <li>
+        <NavLink href="/allAlarms">
+          <GlobeAmericasIcon className="h-4 w-4" />
+          All Alarms
         </NavLink>
       </li>
     </>

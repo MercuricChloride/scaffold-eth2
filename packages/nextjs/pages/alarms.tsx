@@ -27,7 +27,7 @@ const ExampleUI: NextPage = () => {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree&display=swap" rel="stylesheet" />
       </Head>
-      <div className="grid lg:grid-cols-1 flex-grow bg-base-300">
+      <div className="grid lg:grid-cols-1 flex-grow bg-base-100">
         {isConnected && address ? (
           alarmSet(alarm as any) ? (
             <AlarmList alarm={alarm as any} />

@@ -59,14 +59,16 @@ contract YourContract {
     if (block.timestamp >= deadline) revert invalidDeadline();
 
     alarms[user] = Alarm(deadline, valueStake);
+    emit AlarmSet(user, deadline, valueStake);
   }
 
   function dismissAlarm() public {
     Alarm memory alarm = alarms[msg.sender];
-    if (alarm.deadline < block.timestamp) revert youSleptIn();
-    if (alarm.deadline > block.timestamp + 1 hours) revert youShouldBeSleeping();
+    if (alarm.deadline < block.timestamp + 1 hours) revert youSleptIn();
+    if (alarm.deadline > block.timestamp) revert youShouldBeSleeping();
     _sendFunds(alarm.valueStake, msg.sender, msg.sender);
     userStats[msg.sender].onTimeAlarms++;
+    emit AlarmDismissed(msg.sender, alarm.deadline);
   }
 
   function missAlarm(address user) public {
@@ -76,6 +78,7 @@ contract YourContract {
 
     _sendFunds(alarm.valueStake, user, msg.sender);
     userStats[user].missedAlarms++;
+    emit AlarmMissed(user, msg.sender, alarm.valueStake);
   }
 
   function _sendFunds(uint256 amount, address user, address recipient) internal {

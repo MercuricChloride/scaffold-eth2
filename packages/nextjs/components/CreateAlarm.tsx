@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { useState } from "react";
 import { useAccount } from "wagmi";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
@@ -19,7 +19,7 @@ export default function CreateAlarm({ userAddress }: CreateAlarmProps) {
     const { writeAsync, isLoading, isMining } = useScaffoldContractWrite({
         contractName: "YourContract",
         functionName: "setAlarm",
-        args: [getAlarmTime(checked, hour, min), valueStake, address],
+        args: [BigNumber.from(getAlarmTime(checked, hour, min)), valueStake, address],
         // For payable functions, expressed in ETH
         value: ethers.utils.formatEther(valueStake),
         // The number of block confirmations to wait for before considering transaction to be confirmed (default : 1).
@@ -34,12 +34,12 @@ export default function CreateAlarm({ userAddress }: CreateAlarmProps) {
         writeAsync();
     }
 
-    function getAlarmTime(isAm: boolean, hour: number, min: number) {
+    function getAlarmTime(isPM: boolean, hour: number, min: number) {
         let currentTime = new Date();
 
         let alarmTime = new Date();
-        // if it isn't in AM, add 12 hours
-        if (!isAm) {
+        // if it is in the PM, add 12 hours
+        if (isPM) {
             alarmTime.setHours(hour + 12);
         } else {
             alarmTime.setHours(hour);
@@ -49,6 +49,7 @@ export default function CreateAlarm({ userAddress }: CreateAlarmProps) {
         if (alarmTime < currentTime) {
             alarmTime.setDate(alarmTime.getDate() + 1);
         }
+        console.log("alarm time", alarmTime)
 
         return alarmTime.getTime();
     }
@@ -62,7 +63,7 @@ export default function CreateAlarm({ userAddress }: CreateAlarmProps) {
                 <h3> What time do you need to wake up? </h3>
                 <div className="flex items-center justify-center">
                     <select className="select w-1/4 max-w-xs m-6" onChange={(e) => {
-                        setHour(e.target.value)
+                        setHour(Number(e.target.value))
                     }}>
                         <option disabled selected>Hour to wake up</option>
                         <option value={1}>1</option>
@@ -80,7 +81,7 @@ export default function CreateAlarm({ userAddress }: CreateAlarmProps) {
                     </select>
 
                     <select className="select w-1/4 max-w-xs m-6" onChange={(e) => {
-                        setMin(e.target.value)
+                        setMin(Number(e.target.value))
                     }}>
                         <option disabled selected>Min</option>
                         <option value={0}>:00</option>
@@ -103,10 +104,10 @@ export default function CreateAlarm({ userAddress }: CreateAlarmProps) {
                     setValueStake(e.target.value)
                 }}>
                     <option disabled selected>Stake</option>
-                    <option value={ethers.utils.parseEther("1")}>1 eth (I NEED TO BE UP)</option>
-                    <option value={ethers.utils.parseEther("0.1")}>0.1 eth (Very bad)</option>
-                    <option value={ethers.utils.parseEther("0.01")}>0.01 eth (A good amount)</option>
-                    <option value={ethers.utils.parseEther("0.001")}>0.001 eth (A non zero amount)</option>
+                    <option value={ethers.utils.parseEther("1").toString()}>1 eth (I NEED TO BE UP)</option>
+                    <option value={ethers.utils.parseEther("0.1").toString()}>0.1 eth (Very bad)</option>
+                    <option value={ethers.utils.parseEther("0.01").toString()}>0.01 eth (A good amount)</option>
+                    <option value={ethers.utils.parseEther("0.001").toString()}>0.001 eth (A non zero amount)</option>
                 </select>
             </div>
 
