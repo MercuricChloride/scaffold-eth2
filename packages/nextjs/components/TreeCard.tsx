@@ -19,9 +19,11 @@ export const TreeCard = ({ text, className }: TreeCardProps) => {
           backgroundSize: "contain",
         }}
       >
-        <div className="p-2 rounded-full shadow-lg border-2 bg-green-500">
-          <p className="text-center">{text}</p>
-        </div>
+        <a href="https://buidlguidl.com">
+          <div className="p-2 rounded-full shadow-lg border-2 bg-green-500">
+              <p className="text-center">{text}</p>
+          </div>
+        </a>
       </div>
   );
 };

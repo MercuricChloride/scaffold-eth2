@@ -37,7 +37,7 @@ const Home: NextPage = () => {
       <div className="bg-primary">
           <div className="flex flex-col">
           <LandingPage />
-            <CardRow title="Start Here!" className="justify-center" containerClassName="-mt-40 z-50">
+            <CardRow title="Start Here!" className="justify-center" containerClassName="-mt-50 z-50">
               <TreeCard text="First thang"/>
             </CardRow>
             <CardRow title="Anotha one!">
